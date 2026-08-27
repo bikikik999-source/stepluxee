@@ -9,7 +9,84 @@ window.changeQty=(i,d)=>{cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveC
 async function loadProducts(){try{const r=await fetch('/api/products');products=r.ok?await r.json():[]}catch{products=[]}buildSizeFilter();renderProducts()}
 function buildSizeFilter(){const sizes=[...new Set(products.flatMap(p=>p.sizes||[]))].sort((a,b)=>Number(a)-Number(b));$("#sizeFilter").innerHTML='<option value="">Sve veličine</option>'+sizes.map(s=>`<option>${esc(s)}</option>`).join("")}
 function renderProducts(){const q=$("#searchInput").value.toLowerCase(),size=$("#sizeFilter").value;const list=products.filter(p=>(p.name+" "+(p.description||"")).toLowerCase().includes(q)&&(!size||(p.sizes||[]).includes(size)));$("#productsGrid").innerHTML=list.length?list.map(p=>`<article class="product-card" onclick="openProduct('${p.id}')"><div class="product-image"><img src="${p.image||'logo.png'}" alt="${esc(p.name)}" loading="lazy"></div><div class="product-info"><h3>${esc(p.name)}</h3><div class="muted">${(p.sizes||[]).join(" · ")||"Veličine po dogovoru"}</div><div class="price">${money(p.price)}</div><div class="ship">✓ Dostava 680 RSD uključena</div></div></article>`).join(""):`<div class="loading">Trenutno nema modela koji odgovaraju pretrazi.</div>`}
-window.openProduct=id=>{currentProduct=products.find(p=>p.id===id);if(!currentProduct)return;$("#productModalBody").innerHTML=`<div class="product-detail"><div class="pd-image"><img src="${currentProduct.image||'logo.png'}" alt="${esc(currentProduct.name)}"></div><div class="pd-copy"><div class="eyebrow">STEPLUXE</div><h2>${esc(currentProduct.name)}</h2><p class="muted">${esc(currentProduct.description||"Premium model iz StepLuxe kolekcije.")}</p><div class="price">${money(currentProduct.price)}</div><div class="ship">Dostava 680 RSD uračunata u cenu.</div><h4>Izaberi veličinu</h4><div class="sizes">${(currentProduct.sizes||[]).map(s=>`<button class="size" data-size="${esc(s)}">${esc(s)}</button>`).join("")}</div><button class="btn primary full" id="addToCart">Dodaj u korpu</button><p class="tiny">Moguća je zamena veličine uz prethodni dogovor.</p></div></div>`;$$('.size').forEach(b=>b.onclick=()=>{$$('.size').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')});$("#addToCart").onclick=()=>{const size=$(".size.selected")?.dataset.size;if(!size)return alert("Izaberi veličinu.");const old=cart.find(x=>x.id===currentProduct.id&&x.size===size);if(old)old.qty++;else cart.push({id:currentProduct.id,name:currentProduct.name,size,price:currentProduct.price,image:currentProduct.image,qty:1});saveCart();closeModal($("#productModal"));openCart()};openModal($("#productModal"))};
+window.openProduct=id=>{
+  currentProduct=products.find(p=>p.id===id);
+  if(!currentProduct)return;
+
+  const images=currentProduct.images?.length
+    ? currentProduct.images
+    : [currentProduct.image||'logo.png'];
+
+  $("#productModalBody").innerHTML=`
+    <div class="product-detail">
+      <div class="pd-image">
+        <img id="mainProductImage" src="${images[0]}" alt="${esc(currentProduct.name)}">
+      </div>
+
+      <div class="pd-copy">
+        <div class="eyebrow">STEPLUXE</div>
+        <h2>${esc(currentProduct.name)}</h2>
+        <p class="muted">${esc(currentProduct.description||"Premium model iz StepLuxe kolekcije.")}</p>
+        <div class="price">${money(currentProduct.price)}</div>
+        <div class="ship">Dostava 680 RSD uračunata u cenu.</div>
+
+        ${images.length>1?`
+          <div class="product-thumbs">
+            ${images.map((img,i)=>`
+              <img class="product-thumb ${i===0?'selected':''}"
+                   src="${img}"
+                   onclick="changeProductImage('${img}',this)">
+            `).join("")}
+          </div>
+        `:''}
+
+        <h4>Izaberi veličinu</h4>
+        <div class="sizes">
+          ${(currentProduct.sizes||[]).map(s=>
+            `<button class="size" data-size="${esc(s)}">${esc(s)}</button>`
+          ).join("")}
+        </div>
+
+        <button class="btn primary full" id="addToCart">Dodaj u korpu</button>
+        <p class="tiny">Moguća je zamena veličine uz prethodni dogovor.</p>
+      </div>
+    </div>
+  `;
+
+  $$('.size').forEach(b=>b.onclick=()=>{
+    $$('.size').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+  });
+
+  $("#addToCart").onclick=()=>{
+    const size=$(".size.selected")?.dataset.size;
+    if(!size)return alert("Izaberi veličinu.");
+
+    const old=cart.find(x=>x.id===currentProduct.id&&x.size===size);
+
+    if(old)old.qty++;
+    else cart.push({
+      id:currentProduct.id,
+      name:currentProduct.name,
+      size,
+      price:currentProduct.price,
+      image:images[0],
+      qty:1
+    });
+
+    saveCart();
+    closeModal($("#productModal"));
+    openCart();
+  };
+
+  openModal($("#productModal"));
+};
+
+window.changeProductImage=(src,el)=>{
+  $("#mainProductImage").src=src;
+  $$('.product-thumb').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+};
 function openModal(m){m.classList.add("open")} function closeModal(m){m?.classList.remove("open")} $$('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.closest('.modal')));
 $("#cartOpen").onclick=openCart;$("#cartClose").onclick=closeCart;$("#backdrop").onclick=closeCart;function openCart(){$("#cart").classList.add("open");$("#backdrop").classList.add("open");renderCart()}function closeCart(){$("#cart").classList.remove("open");$("#backdrop").classList.remove("open")}
 $("#searchInput").oninput=renderProducts;$("#sizeFilter").onchange=renderProducts;
