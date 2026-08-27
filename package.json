@@ -1,8 +1,8 @@
 {
-  "name": "stepluxe-netlify-store",
+  "name": "stepluxe-netlify",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@netlify/blobs": "latest"
+    "@netlify/blobs": "^10.0.0"
   }
 }
