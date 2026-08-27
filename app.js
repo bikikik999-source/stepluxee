@@ -20,8 +20,20 @@ window.openProduct=id=>{
   $("#productModalBody").innerHTML=`
     <div class="product-detail">
       <div class="pd-image">
-        <img id="mainProductImage" src="${images[0]}" alt="${esc(currentProduct.name)}">
-      </div>
+  <img id="mainProductImage" src="${images[0]}" alt="${esc(currentProduct.name)}">
+
+  ${images.length>1?`
+    <div class="product-thumbs">
+      ${images.map((img,i)=>`
+        <button type="button"
+          class="product-thumb ${i===0?'selected':''}"
+          onclick="changeProductImage('${img}',this)">
+          <img src="${img}" alt="Slika ${i+1}">
+        </button>
+      `).join("")}
+    </div>
+  `:''}
+</div>
 
       <div class="pd-copy">
         <div class="eyebrow">STEPLUXE</div>
