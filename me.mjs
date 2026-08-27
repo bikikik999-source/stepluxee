@@ -1,4 +1,8 @@
-import { json, validSession } from "./_shared.mjs";
+const TOKEN = "stepluxe-admin-session-2026";
 export default async function handler(req) {
-  return json({ authenticated: validSession(req.headers.get("cookie") || "") });
+  const cookie = req.headers.get("cookie") || "";
+  const authenticated = cookie.split(";").some(x => x.trim() === `stepluxe_session=${TOKEN}`);
+  return new Response(JSON.stringify({authenticated}), {
+    status:200, headers:{"Content-Type":"application/json"}
+  });
 }

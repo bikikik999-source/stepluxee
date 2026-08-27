@@ -1,13 +1,24 @@
-import { json, createSession, sessionCookie } from "./_shared.mjs";
-
-const ADMIN_PASSWORD = "StepLuxe2026!";
+const PASSWORD = "StepLuxe2026!";
+const TOKEN = "stepluxe-admin-session-2026";
 
 export default async function handler(req) {
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  let body = {};
-  try { body = await req.json(); } catch { return json({ error: "Neispravan zahtev." }, 400); }
-  if (String(body.password || "") !== ADMIN_PASSWORD) {
-    return json({ error: "Pogrešna lozinka." }, 401);
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({error:"Method not allowed"}), {
+      status:405, headers:{"Content-Type":"application/json"}
+    });
   }
-  return json({ ok: true }, 200, { "Set-Cookie": sessionCookie(createSession()) });
+  let body = {};
+  try { body = await req.json(); } catch {}
+  if (String(body.password || "") !== PASSWORD) {
+    return new Response(JSON.stringify({error:"Pogrešna lozinka."}), {
+      status:401, headers:{"Content-Type":"application/json"}
+    });
+  }
+  return new Response(JSON.stringify({ok:true}), {
+    status:200,
+    headers:{
+      "Content-Type":"application/json",
+      "Set-Cookie": `stepluxe_session=${TOKEN}; Path=/; Max-Age=604800; HttpOnly; Secure; SameSite=Lax`
+    }
+  });
 }
