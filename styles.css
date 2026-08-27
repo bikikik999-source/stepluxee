@@ -10,13 +10,19 @@
   --shadow:0 24px 70px rgba(94,34,180,.18)
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box
+}
 
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth
+}
 
 body{
   margin:0;
-  background:radial-gradient(circle at 75% 10%,#1b0d2d 0,transparent 32%),var(--bg);
+  background:
+    radial-gradient(circle at 75% 10%,#1b0d2d 0,transparent 32%),
+    var(--bg);
   color:var(--text);
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   line-height:1.5
@@ -34,6 +40,8 @@ a{
   color:inherit;
   text-decoration:none
 }
+
+/* HEADER */
 
 .site-header{
   position:sticky;
@@ -69,7 +77,9 @@ a{
   font-size:14px
 }
 
-.site-header nav a:hover{color:#fff}
+.site-header nav a:hover{
+  color:#fff
+}
 
 .cart-btn{
   border:1px solid var(--line);
@@ -91,10 +101,14 @@ a{
   margin-left:6px
 }
 
+/* MAIN */
+
 main{
   max-width:1400px;
   margin:auto
 }
+
+/* HERO */
 
 .hero{
   min-height:680px;
@@ -168,7 +182,9 @@ main{
   color:#ddd2e7
 }
 
-.full{width:100%}
+.full{
+  width:100%
+}
 
 .hero-mark{
   position:relative;
@@ -192,11 +208,17 @@ main{
   filter:blur(5px)
 }
 
+/* BENEFITS */
+
 .benefits{
   margin:0 clamp(18px,5vw,70px);
   border:1px solid var(--line);
   border-radius:18px;
-  background:linear-gradient(90deg,rgba(139,66,255,.09),rgba(255,255,255,.02));
+  background:linear-gradient(
+    90deg,
+    rgba(139,66,255,.09),
+    rgba(255,255,255,.02)
+  );
   display:grid;
   grid-template-columns:repeat(4,1fr);
   overflow:hidden
@@ -207,7 +229,9 @@ main{
   border-right:1px solid var(--line)
 }
 
-.benefits div:last-child{border:0}
+.benefits div:last-child{
+  border:0
+}
 
 .benefits b{
   display:block;
@@ -218,6 +242,8 @@ main{
   color:var(--muted);
   font-size:12px
 }
+
+/* PRODUCTS */
 
 .products-section{
   padding:110px clamp(18px,5vw,70px)
@@ -295,7 +321,9 @@ main{
   display:block
 }
 
-.product-info{padding:17px}
+.product-info{
+  padding:17px
+}
 
 .product-info h3{
   margin:0 0 4px;
@@ -325,6 +353,8 @@ main{
   text-align:center;
   color:var(--muted)
 }
+
+/* EXCHANGE */
 
 .exchange{
   margin:0 clamp(18px,5vw,70px);
@@ -366,6 +396,8 @@ main{
   color:#c0b7c8
 }
 
+/* CONTACT */
+
 .contact{
   text-align:center;
   padding:130px 20px
@@ -376,6 +408,8 @@ main{
   margin:15px auto 25px
 }
 
+/* FOOTER */
+
 footer{
   padding:30px clamp(18px,5vw,70px);
   border-top:1px solid var(--line);
@@ -385,7 +419,11 @@ footer{
   font-size:12px
 }
 
-footer a{color:#a95dff}
+footer a{
+  color:#a95dff
+}
+
+/* MODAL */
 
 .modal{
   position:fixed;
@@ -398,7 +436,9 @@ footer a{color:#a95dff}
   backdrop-filter:blur(10px)
 }
 
-.modal.open{display:grid}
+.modal.open{
+  display:grid
+}
 
 .modal-card{
   width:min(760px,100%);
@@ -422,65 +462,75 @@ footer a{color:#a95dff}
   position:absolute;
   right:16px;
   top:12px;
-  z-index:5
+  z-index:20
 }
+
+/* PRODUCT MODAL */
 
 .product-modal{
   padding:0;
-  overflow:hidden
+  overflow:auto
 }
 
 .product-detail{
   display:grid;
-  grid-template-columns:1fr 1fr
+  grid-template-columns:1fr 1fr;
+  align-items:start
 }
 
-/* GLAVNA SLIKA PROIZVODA */
+/* GALERIJA - LEVA STRANA */
 
 .product-detail .pd-image{
   background:#0a0810;
-  min-height:430px;
+  min-height:560px;
   display:flex;
   flex-direction:column;
   overflow:hidden
 }
 
+/* GLAVNA SLIKA */
+
 .product-detail .pd-image > img{
   width:100%;
-  height:430px;
+  height:470px;
   object-fit:contain;
   object-position:center;
   display:block;
-  padding:15px;
-  flex-shrink:0
+  padding:8px;
+  flex-shrink:0;
+  background:#f5f5f5
 }
 
-/* SLIKE ISPOD GLAVNE SLIKE */
+/* MALE SLIKE */
 
 .product-thumbs{
   display:flex;
+  align-items:center;
   gap:10px;
-  padding:15px;
-  overflow-x:auto;
   width:100%;
-  flex-shrink:0
+  padding:14px 15px;
+  overflow-x:auto;
+  background:#0a0810;
+  flex-shrink:0;
+  scrollbar-width:thin
 }
 
 .product-thumb{
-  width:75px !important;
-  height:75px !important;
-  min-width:75px !important;
-  min-height:75px !important;
+  width:72px !important;
+  height:72px !important;
+  min-width:72px !important;
+  min-height:72px !important;
   object-fit:cover !important;
   object-position:center;
   display:block !important;
   padding:0 !important;
+  margin:0 !important;
   border:2px solid transparent;
   border-radius:10px;
   cursor:pointer;
-  opacity:.55;
+  opacity:.6;
   flex-shrink:0;
-  background:#0d0912;
+  background:#fff;
   transition:.2s
 }
 
@@ -492,8 +542,10 @@ footer a{color:#a95dff}
 .product-thumb.selected{
   border-color:var(--purple2);
   opacity:1;
-  box-shadow:0 0 0 2px rgba(180,108,255,.18)
+  box-shadow:0 0 0 2px rgba(180,108,255,.2)
 }
+
+/* DESNA STRANA PROIZVODA */
 
 .pd-copy{
   padding:32px
@@ -527,6 +579,8 @@ footer a{color:#a95dff}
   color:#fff
 }
 
+/* CART */
+
 .cart{
   position:fixed;
   right:0;
@@ -543,7 +597,9 @@ footer a{color:#a95dff}
   overflow:auto
 }
 
-.cart.open{transform:translateX(0)}
+.cart.open{
+  transform:translateX(0)
+}
 
 .backdrop{
   display:none;
@@ -553,14 +609,18 @@ footer a{color:#a95dff}
   background:#0008
 }
 
-.backdrop.open{display:block}
+.backdrop.open{
+  display:block
+}
 
 .cart-head{
   display:flex;
   justify-content:space-between
 }
 
-.cart-head .close{position:static}
+.cart-head .close{
+  position:static
+}
 
 .cart-row{
   display:grid;
@@ -605,6 +665,8 @@ footer a{color:#a95dff}
   font-size:11px
 }
 
+/* CHECKOUT */
+
 .checkout-card form{
   display:grid;
   gap:10px
@@ -619,6 +681,8 @@ footer a{color:#a95dff}
   font-size:13px;
   color:#b46cff
 }
+
+/* ADMIN */
 
 .admin-card{
   width:min(1000px,100%)
@@ -660,7 +724,9 @@ footer a{color:#a95dff}
   border-radius:8px
 }
 
-.admin-item-main{flex:1}
+.admin-item-main{
+  flex:1
+}
 
 .admin-actions{
   display:flex;
@@ -713,6 +779,8 @@ footer a{color:#a95dff}
   display:none !important
 }
 
+/* TABLET */
+
 @media(max-width:850px){
 
   .site-header nav{
@@ -761,17 +829,23 @@ footer a{color:#a95dff}
   }
 
   .product-detail .pd-image{
-    min-height:350px
+    min-height:430px
   }
 
   .product-detail .pd-image > img{
-    height:300px
+    height:350px
+  }
+
+  .pd-copy{
+    padding:25px
   }
 
   .admin-grid{
     grid-template-columns:1fr
   }
 }
+
+/* TELEFON */
 
 @media(max-width:520px){
 
@@ -810,10 +884,42 @@ footer a{color:#a95dff}
     gap:8px
   }
 
+  .modal{
+    padding:10px
+  }
+
+  .product-modal{
+    width:100%;
+    max-height:94vh;
+    border-radius:18px
+  }
+
+  .product-detail .pd-image{
+    min-height:400px
+  }
+
+  .product-detail .pd-image > img{
+    height:320px;
+    padding:5px
+  }
+
+  .product-thumbs{
+    padding:12px;
+    gap:8px
+  }
+
   .product-thumb{
-    width:65px !important;
-    height:65px !important;
-    min-width:65px !important;
-    min-height:65px !important
+    width:62px !important;
+    height:62px !important;
+    min-width:62px !important;
+    min-height:62px !important
+  }
+
+  .pd-copy{
+    padding:22px
+  }
+
+  .pd-copy h2{
+    font-size:34px
   }
 }
