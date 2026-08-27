@@ -42,15 +42,7 @@ window.openProduct=id=>{
         <div class="price">${money(currentProduct.price)}</div>
         <div class="ship">Dostava 680 RSD uračunata u cenu.</div>
 
-        ${images.length>1?`
-          <div class="product-thumbs">
-            ${images.map((img,i)=>`
-              <img class="product-thumb ${i===0?'selected':''}"
-                   src="${img}"
-                   onclick="changeProductImage('${img}',this)">
-            `).join("")}
-          </div>
-        `:''}
+        
 
         <h4>Izaberi veličinu</h4>
         <div class="sizes">
