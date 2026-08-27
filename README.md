@@ -20,3 +20,4 @@ Functions directory: `netlify/functions`
 
 ## Admin
 Otvorite `/#admin`. Ako niste postavili `ADMIN_PASSWORD` na Netlify-u, podrazumevana lozinka je `StepLuxe2026!`.
+\n\n### Admin prijava\nLozinka za admin je `StepLuxe2026!`. Ova verzija je namerno nezavisna od Netlify Environment Variables za admin prijavu.\n
