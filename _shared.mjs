@@ -1,21 +1,18 @@
 import { getStore } from "@netlify/blobs";
 import crypto from "node:crypto";
 
-export const json = (data, status = 200, extra = {}) => ({
-  statusCode: status,
-  headers: { "Content-Type": "application/json; charset=utf-8", ...extra },
-  body: JSON.stringify(data)
-});
+const SESSION_SECRET = "StepLuxe-session-secret-2026-fixed-9f4d2c7a";
+
+export const json = (data, status = 200, extra = {}) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8", ...extra }
+  });
 
 export const store = () => getStore({ name: "stepluxe-data", consistency: "strong" });
 
-export function env(name) {
-  if (name === "SESSION_SECRET") return "StepLuxe-session-secret-2026-fixed-9f4d2c7a";
-  return process.env[name] || "";
-}
-
 function sign(value) {
-  return crypto.createHmac("sha256", env("SESSION_SECRET")).update(value).digest("hex");
+  return crypto.createHmac("sha256", SESSION_SECRET).update(value).digest("hex");
 }
 
 export function createSession() {
@@ -25,7 +22,7 @@ export function createSession() {
 
 export function validSession(cookieHeader = "") {
   const match = cookieHeader.match(/(?:^|;\s*)stepluxe_session=([^;]+)/);
-  if (!match || !env("SESSION_SECRET")) return false;
+  if (!match) return false;
   const [encoded, sig] = decodeURIComponent(match[1]).split(".");
   if (!encoded || !sig) return false;
   let payload;
@@ -36,9 +33,9 @@ export function validSession(cookieHeader = "") {
   try { return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)); } catch { return false; }
 }
 
-export function requireAdmin(event) {
-  if (!validSession(event.headers?.cookie || event.headers?.Cookie || "")) return json({ error: "Niste prijavljeni." }, 401);
-  return null;
+export function requireAdmin(req) {
+  const cookie = req?.headers?.get?.("cookie") || "";
+  return validSession(cookie) ? null : json({ error: "Niste prijavljeni." }, 401);
 }
 
 export const sessionCookie = (value, maxAge = 60 * 60 * 24 * 7) =>
