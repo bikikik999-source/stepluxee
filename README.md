@@ -11,7 +11,7 @@ U Project configuration → Environment variables dodaj:
 
 Nema SQL-a, Supabase-a ni Firebase-a.
 
-Admin: `/#admin`
+Admin: `/#admin` (podrazumevana lozinka: `StepLuxe2026!`; promeni je kasnije preko Netlify `ADMIN_PASSWORD`)
 
 Build command: prazno
 Publish directory: `.`

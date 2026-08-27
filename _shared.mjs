@@ -23,7 +23,7 @@ export function createSession() {
 }
 
 export function validSession(cookieHeader = "") {
-  const match = cookieHeader.match(/(?:^|;\\s*)stepluxe_session=([^;]+)/);
+  const match = cookieHeader.match(/(?:^|;\s*)stepluxe_session=([^;]+)/);
   if (!match || !env("SESSION_SECRET")) return false;
   const [encoded, sig] = decodeURIComponent(match[1]).split(".");
   if (!encoded || !sig) return false;
