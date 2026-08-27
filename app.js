@@ -96,7 +96,34 @@ async function api(path,options={}){const r=await fetch(path,{headers:{'Content-
 function adminLogin(){$("#adminMount").innerHTML=`<div class="eyebrow">STEPLUXE ADMIN</div><h2>Admin panel</h2><p class="muted">Unesi admin lozinku.</p><form id="loginForm"><input type="password" name="password" placeholder="Lozinka" required><button class="btn primary">Prijava</button><p id="loginMsg" class="form-msg"></p></form>`;$("#loginForm").onsubmit=async e=>{e.preventDefault();try{await api('/api/login',{method:'POST',body:JSON.stringify({password:new FormData(e.target).get('password')})});adminPanel()}catch(err){$("#loginMsg").textContent=err.message}}}
 async function openAdmin(){openModal($("#adminModal"));try{const me=await api('/api/me');me.authenticated?adminPanel():adminLogin()}catch{adminLogin()}}
 async function adminPanel(){$("#adminMount").innerHTML=`<div class="eyebrow">STEPLUXE ADMIN</div><div style="display:flex;justify-content:space-between;gap:15px;align-items:center"><h2>Kontrolni panel</h2><button class="btn ghost" id="logout">Odjava</button></div><div class="tabs"><button class="tab active" data-tab="products">Proizvodi</button><button class="tab" data-tab="orders">Porudžbine</button></div><div id="adminContent"></div>`;$("#logout").onclick=async()=>{await api('/api/logout',{method:'POST'});adminLogin()};$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');t.dataset.tab==='products'?adminProducts():adminOrders()});adminProducts()}
-function compressImage(file){return new Promise((resolve,reject)=>{const img=new Image(),reader=new FileReader();reader.onload=()=>{img.onload=()=>{const max=1200,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.82))};img.onerror=reject;img.src=reader.result};reader.onerror=reject;reader.readAsDataURL(file)})}
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const reader=new FileReader();
+
+    reader.onload=()=>{
+      img.onload=()=>{
+        const max=700;
+        const scale=Math.min(1,max/Math.max(img.width,img.height));
+
+        const c=document.createElement('canvas');
+        c.width=Math.round(img.width*scale);
+        c.height=Math.round(img.height*scale);
+
+        const ctx=c.getContext('2d');
+        ctx.drawImage(img,0,0,c.width,c.height);
+
+        resolve(c.toDataURL('image/jpeg',0.65));
+      };
+
+      img.onerror=()=>reject(new Error('Slika nije mogla da se obradi.'));
+      img.src=reader.result;
+    };
+
+    reader.onerror=()=>reject(new Error('Slika nije mogla da se učita.'));
+    reader.readAsDataURL(file);
+  });
+}
 async function adminProducts(){let list=[];try{list=await api('/api/admin-products')}catch(err){$("#adminContent").textContent=err.message;return}$("#adminContent").innerHTML=`<div class="admin-grid"><div><h3>Dodaj proizvod</h3><form id="productForm"><input name="name" placeholder="Naziv modela" required><input name="price" type="number" min="0" placeholder="Cena u RSD (sa dostavom)" required><input name="sizes" placeholder="Veličine, npr. 40,41,42,43" required><textarea name="description" placeholder="Opis"></textarea><input name="images" type="file" accept="image/*" multiple required><button class="btn primary">Dodaj proizvod</button><p id="productMsg" class="form-msg"></p></form></div><div><h3>Proizvodi (${list.length})</h3><div class="admin-list">${list.map(p=>`<div class="admin-item"><img src="${p.image||'logo.png'}"><div class="admin-item-main"><b>${esc(p.name)}</b><div class="muted">${money(p.price)} · ${(p.sizes||[]).join(', ')}</div></div><div class="admin-actions"><button class="btn ghost" onclick="toggleProduct('${p.id}',${!p.active})">${p.active?'Sakrij':'Prikaži'}</button><button class="btn danger" onclick="deleteProduct('${p.id}')">Obriši</button></div></div>`).join('')}</div></div></div>`;$("#productForm").onsubmit=addProduct}
 async function addProduct(e){
   e.preventDefault();
