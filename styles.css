@@ -40,3 +40,30 @@ box-shadow:0 0 0 2px rgba(180,108,255,.18);
 .admin-card{width:min(1000px,100%)}.admin-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:25px}.admin-card form{display:grid;gap:10px}.admin-card textarea{min-height:90px}.admin-list{display:grid;gap:10px}.admin-item{display:flex;gap:12px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:12px}.admin-item img{width:55px;height:55px;object-fit:cover;border-radius:8px}.admin-item-main{flex:1}.admin-actions{display:flex;gap:6px}.danger{background:#31121e!important;color:#ff9bb3!important}.tabs{display:flex;gap:7px;margin:20px 0}.tab{padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#0d0912;color:#aaa;cursor:pointer}.tab.active{background:#26133c;color:#fff}.order{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px}.order-head{display:flex;justify-content:space-between}.status{font-size:11px;color:#b46cff}.hidden{display:none!important}
 @media(max-width:850px){.site-header nav{display:none}.hero{grid-template-columns:1fr;min-height:auto;padding-top:55px}.hero-mark{min-height:340px}.benefits{grid-template-columns:1fr 1fr}.products-grid{grid-template-columns:1fr 1fr}.section-head{align-items:stretch;flex-direction:column}.filters{flex-wrap:wrap}.filters>*{flex:1;min-width:140px}.exchange{grid-template-columns:1fr;padding:35px}.product-detail{grid-template-columns:1fr}.product-detail .pd-image{min-height:300px}.admin-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.hero h1{font-size:53px}.products-grid{grid-template-columns:1fr}.benefits{grid-template-columns:1fr}.benefits div{border-right:0;border-bottom:1px solid var(--line)}.benefits div:last-child{border-bottom:0}.section-head h2,.contact h2{font-size:38px}.exchange h2{font-size:42px}footer{flex-direction:column;gap:8px}}
+.product-thumbs{
+  display:flex;
+  gap:10px;
+  padding:15px 0;
+  overflow-x:auto;
+}
+
+.product-thumb{
+  width:75px!important;
+  height:75px!important;
+  object-fit:cover!important;
+  padding:0!important;
+  border:2px solid transparent;
+  border-radius:10px;
+  cursor:pointer;
+  opacity:.65;
+  flex-shrink:0;
+}
+
+.product-thumb.selected{
+  border-color:#8b42ff;
+  opacity:1;
+}
+
+.product-thumb:hover{
+  opacity:1;
+}
