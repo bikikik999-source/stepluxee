@@ -16,3 +16,7 @@ Admin: `/#admin` (podrazumevana lozinka: `StepLuxe2026!`; promeni je kasnije pre
 Build command: prazno
 Publish directory: `.`
 Functions directory: `netlify/functions`
+
+
+## Admin
+Otvorite `/#admin`. Ako niste postavili `ADMIN_PASSWORD` na Netlify-u, podrazumevana lozinka je `StepLuxe2026!`.

@@ -10,7 +10,7 @@ export const json = (data, status = 200, extra = {}) => ({
 export const store = () => getStore({ name: "stepluxe-data", consistency: "strong" });
 
 export function env(name) {
-  return process.env[name] || "";
+  return process.env[name] || (name === "SESSION_SECRET" ? "StepLuxe-session-secret-2026-keep-private-9f4d2c7a" : "");
 }
 
 function sign(value) {
