@@ -1,212 +1,165 @@
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
-let products = [];
-let cart = JSON.parse(localStorage.getItem("stepluxe_cart") || "[]");
-let currentProduct = null;
+let products=[];
+let cart=JSON.parse(localStorage.getItem("stepluxe_cart")||"[]");
+let currentProduct=null;
 
-const DELIVERY = 680;
+$("#year").textContent=new Date().getFullYear();
+$("#contactBtn").href="https://instagram.com/";
 
-$("#year").textContent = new Date().getFullYear();
-$("#contactBtn").href = "https://instagram.com/";
+const money=n=>new Intl.NumberFormat("sr-RS").format(n)+" RSD";
 
-const finalPrice = price => Number(price || 0) + DELIVERY;
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+}[m]));
 
-const money = n =>
-  new Intl.NumberFormat("sr-RS").format(Number(n || 0)) + " RSD";
-
-const esc = s =>
-  String(s ?? "").replace(/[&<>"']/g, m => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[m]));
-
-function saveCart() {
-  localStorage.setItem(
-    "stepluxe_cart",
-    JSON.stringify(cart)
-  );
-
+function saveCart(){
+  localStorage.setItem("stepluxe_cart",JSON.stringify(cart));
   renderCart();
 }
 
-function cartCount() {
-  return cart.reduce((a, x) => a + x.qty, 0);
+function cartCount(){
+  return cart.reduce((a,x)=>a+x.qty,0);
 }
 
-function renderCart() {
-  $("#cartCount").textContent = cartCount();
+function renderCart(){
+  $("#cartCount").textContent=cartCount();
 
-  const total = cart.reduce(
-    (a, x) => a + Number(x.price) * x.qty,
-    0
+  $("#cartTotal").textContent=money(
+    cart.reduce((a,x)=>a+x.price*x.qty,0)
   );
 
-  $("#cartTotal").textContent = money(total);
-
-  $("#cartItems").innerHTML = cart.length
-    ? cart.map((x, i) => `
+  $("#cartItems").innerHTML=cart.length
+    ?cart.map((x,i)=>`
       <div class="cart-row">
-
-        <img
-          src="${x.image || "logo.png"}"
-          alt=""
-        >
+        <img src="${x.image||'logo.png'}">
 
         <div>
           <b>${esc(x.name)}</b>
-
-          <div class="muted">
-            Veličina ${esc(x.size)}
-          </div>
-
-          <div class="price">
-            ${money(x.price)}
-          </div>
+          <div class="muted">Veličina ${esc(x.size)}</div>
+          <div class="price">${money(x.price)}</div>
         </div>
 
         <div class="qty">
-          <button onclick="changeQty(${i}, -1)">−</button>
+          <button onclick="changeQty(${i},-1)">−</button>
           <span>${x.qty}</span>
-          <button onclick="changeQty(${i}, 1)">+</button>
+          <button onclick="changeQty(${i},1)">+</button>
         </div>
-
       </div>
     `).join("")
-    : `<p class="muted">Korpa je prazna.</p>`;
+    :`<p class="muted">Korpa je prazna.</p>`;
 }
 
-window.changeQty = (i, d) => {
-  if (!cart[i]) return;
+window.changeQty=(i,d)=>{
+  cart[i].qty+=d;
 
-  cart[i].qty += d;
-
-  if (cart[i].qty <= 0) {
-    cart.splice(i, 1);
+  if(cart[i].qty<=0){
+    cart.splice(i,1);
   }
 
   saveCart();
 };
 
-async function loadProducts() {
-  try {
-    const r = await fetch("/api/products");
-
-    products = r.ok
-      ? await r.json()
-      : [];
-
-  } catch {
-    products = [];
+async function loadProducts(){
+  try{
+    const r=await fetch('/api/products');
+    products=r.ok?await r.json():[];
+  }catch{
+    products=[];
   }
 
   buildSizeFilter();
   renderProducts();
 }
 
-function buildSizeFilter() {
-  const sizes = [
+function buildSizeFilter(){
+  const sizes=[
     ...new Set(
-      products.flatMap(p => p.sizes || [])
+      products.flatMap(p=>p.sizes||[])
     )
-  ].sort((a, b) => Number(a) - Number(b));
+  ].sort((a,b)=>Number(a)-Number(b));
 
-  $("#sizeFilter").innerHTML =
-    `<option value="">Sve veličine</option>` +
-    sizes.map(
-      s => `<option value="${esc(s)}">${esc(s)}</option>`
-    ).join("");
+  $("#sizeFilter").innerHTML=
+    '<option value="">Sve veličine</option>'+
+    sizes.map(s=>`<option>${esc(s)}</option>`).join("");
 }
 
-function renderProducts() {
-  const q = $("#searchInput").value.toLowerCase();
-  const size = $("#sizeFilter").value;
+function renderProducts(){
+  const q=$("#searchInput").value.toLowerCase();
+  const size=$("#sizeFilter").value;
 
-  const list = products.filter(p => {
-    const text =
-      `${p.name} ${p.description || ""}`.toLowerCase();
+  const list=products.filter(p=>
+    (p.name+" "+(p.description||""))
+      .toLowerCase()
+      .includes(q)
+    &&
+    (!size||(p.sizes||[]).includes(size))
+  );
 
-    return (
-      text.includes(q) &&
-      (!size || (p.sizes || []).includes(size))
-    );
-  });
-
-  $("#productsGrid").innerHTML = list.length
-    ? list.map(p => `
+  $("#productsGrid").innerHTML=list.length
+    ?list.map(p=>`
       <article
         class="product-card"
-        onclick="openProduct('${esc(p.id)}')"
+        onclick="openProduct('${p.id}')"
       >
-
         <div class="product-image">
           <img
-            src="${p.image || "logo.png"}"
+            src="${p.image||'logo.png'}"
             alt="${esc(p.name)}"
             loading="lazy"
           >
         </div>
 
         <div class="product-info">
-
           <h3>${esc(p.name)}</h3>
 
           <div class="muted">
-            ${
-              (p.sizes || []).join(" · ") ||
-              "Veličine po dogovoru"
-            }
+            ${(p.sizes||[]).join(" · ")||"Veličine po dogovoru"}
           </div>
 
           <div class="price">
-            ${money(finalPrice(p.price))}
+            ${money(p.price)}
           </div>
 
           <div class="ship">
             ✓ Dostava 680 RSD uključena
           </div>
-
         </div>
-
       </article>
     `).join("")
-    : `
+    :`
       <div class="loading">
         Trenutno nema modela koji odgovaraju pretrazi.
       </div>
     `;
 }
 
-window.openProduct = id => {
-  currentProduct =
-    products.find(
-      p => String(p.id) === String(id)
-    );
 
-  if (!currentProduct) return;
+/* =========================
+   PROIZVOD
+   ========================= */
 
-  /*
-    Uzimamo slike koje postoje u proizvodu.
+window.openProduct=id=>{
+  currentProduct=products.find(p=>p.id===id);
 
-    NEMA dodatnog pravljenja drugog reda slika.
-  */
-  const images =
-    Array.isArray(currentProduct.images) &&
-    currentProduct.images.length
-      ? currentProduct.images
-      : [currentProduct.image || "logo.png"];
+  if(!currentProduct)return;
+
+  const images=currentProduct.images?.length
+    ?currentProduct.images
+    :[currentProduct.image||'logo.png'];
 
   /*
-    680 RSD se dodaje OVDE,
-    jednom za svaki proizvod.
+    BITNO:
+    Product thumbs postoje SAMO OVDE,
+    odmah ispod velike slike.
+    NEMA IH VIŠE U .pd-copy.
   */
-  const price = finalPrice(currentProduct.price);
 
-  $("#productModalBody").innerHTML = `
-
+  $("#productModalBody").innerHTML=`
     <div class="product-detail">
 
       <div class="pd-image">
@@ -218,33 +171,28 @@ window.openProduct = id => {
         >
 
         ${
-          images.length > 1
-            ? `
-              <div class="product-thumbs">
-
-                ${images.map((img, i) => `
-                  <button
-                    type="button"
-                    class="product-thumb ${
-                      i === 0 ? "selected" : ""
-                    }"
-                    data-image="${esc(img)}"
+          images.length>1
+          ?`
+            <div class="product-thumbs">
+              ${images.map((img,i)=>`
+                <button
+                  type="button"
+                  class="product-thumb ${i===0?'selected':''}"
+                  onclick="changeProductImage('${img}',this)"
+                >
+                  <img
+                    src="${img}"
+                    alt="Slika ${i+1}"
                   >
-
-                    <img
-                      src="${img}"
-                      alt="Slika ${i + 1}"
-                    >
-
-                  </button>
-                `).join("")}
-
-              </div>
-            `
-            : ""
+                </button>
+              `).join("")}
+            </div>
+          `
+          :''
         }
 
       </div>
+
 
       <div class="pd-copy">
 
@@ -257,39 +205,36 @@ window.openProduct = id => {
         </h2>
 
         <p class="muted">
-          ${
-            esc(
-              currentProduct.description ||
-              "Premium model iz StepLuxe kolekcije."
-            )
-          }
+          ${esc(
+            currentProduct.description ||
+            "Premium model iz StepLuxe kolekcije."
+          )}
         </p>
 
         <div class="price">
-          ${money(price)}
+          ${money(currentProduct.price)}
         </div>
 
         <div class="ship">
           Dostava 680 RSD uračunata u cenu.
         </div>
 
+
         <h4>
           Izaberi veličinu
         </h4>
 
         <div class="sizes">
-
-          ${(currentProduct.sizes || []).map(s => `
+          ${(currentProduct.sizes||[]).map(s=>`
             <button
-              type="button"
               class="size"
               data-size="${esc(s)}"
             >
               ${esc(s)}
             </button>
           `).join("")}
-
         </div>
+
 
         <button
           class="btn primary full"
@@ -307,294 +252,203 @@ window.openProduct = id => {
     </div>
   `;
 
-  /*
-    Klik na slike.
-  */
-  $$(".product-thumb").forEach(button => {
-    button.onclick = () => {
-      changeProductImage(
-        button.dataset.image,
-        button
+
+  /* IZBOR VELIČINE */
+
+  $$('.size').forEach(b=>{
+    b.onclick=()=>{
+      $$('.size').forEach(x=>
+        x.classList.remove('selected')
       );
+
+      b.classList.add('selected');
     };
   });
 
-  /*
-    Klik na veličinu.
-  */
-  $$(".size").forEach(button => {
-    button.onclick = () => {
 
-      $$(".size").forEach(x =>
-        x.classList.remove("selected")
-      );
+  /* DODAVANJE U KORPU */
 
-      button.classList.add("selected");
-    };
-  });
+  $("#addToCart").onclick=()=>{
+    const size=$(".size.selected")?.dataset.size;
 
-  /*
-    Dodavanje u korpu.
-  */
-  $("#addToCart").onclick = () => {
-
-    const size =
-      $(".size.selected")?.dataset.size;
-
-    if (!size) {
-      alert("Izaberi veličinu.");
-      return;
+    if(!size){
+      return alert("Izaberi veličinu.");
     }
 
-    /*
-      Tražimo isti proizvod + istu veličinu.
-    */
-    const old = cart.find(
-      x =>
-        String(x.id) === String(currentProduct.id) &&
-        String(x.size) === String(size)
+    const old=cart.find(
+      x=>x.id===currentProduct.id&&x.size===size
     );
 
-    if (old) {
-
+    if(old){
       old.qty++;
-
-    } else {
-
+    }else{
       cart.push({
-        id: currentProduct.id,
-        name: currentProduct.name,
-        size: size,
-
-        /*
-          BITNO:
-          cena već sadrži +680 RSD.
-        */
-        price: price,
-
-        image: images[0],
-
-        qty: 1
+        id:currentProduct.id,
+        name:currentProduct.name,
+        size,
+        price:currentProduct.price,
+        image:images[0],
+        qty:1
       });
     }
 
     saveCart();
 
     closeModal($("#productModal"));
-
     openCart();
   };
 
   openModal($("#productModal"));
 };
 
-window.changeProductImage = (src, el) => {
 
-  const main =
-    $("#mainProductImage");
+/* =========================
+   PROMENA VELIKE SLIKE
+   ========================= */
 
-  if (!main) return;
+window.changeProductImage=(src,el)=>{
+  $("#mainProductImage").src=src;
 
-  main.src = src;
-
-  $$(".product-thumb").forEach(x =>
-    x.classList.remove("selected")
+  $$('.product-thumb').forEach(x=>
+    x.classList.remove('selected')
   );
 
-  if (el) {
-    el.classList.add("selected");
-  }
+  el.classList.add('selected');
 };
 
-function openModal(m) {
-  if (m) {
-    m.classList.add("open");
-  }
+
+/* =========================
+   MODALI
+   ========================= */
+
+function openModal(m){
+  m.classList.add("open");
 }
 
-function closeModal(m) {
-  if (m) {
-    m.classList.remove("open");
-  }
+function closeModal(m){
+  m?.classList.remove("open");
 }
 
-$$("[data-close]").forEach(button => {
-
-  button.onclick = () => {
-    closeModal(
-      button.closest(".modal")
-    );
+$$('[data-close]').forEach(b=>{
+  b.onclick=()=>{
+    closeModal(b.closest('.modal'));
   };
-
 });
 
-$("#cartOpen").onclick = openCart;
-$("#cartClose").onclick = closeCart;
-$("#backdrop").onclick = closeCart;
 
-function openCart() {
+/* =========================
+   KORPA
+   ========================= */
 
+$("#cartOpen").onclick=openCart;
+$("#cartClose").onclick=closeCart;
+$("#backdrop").onclick=closeCart;
+
+function openCart(){
   $("#cart").classList.add("open");
   $("#backdrop").classList.add("open");
-
   renderCart();
 }
 
-function closeCart() {
-
+function closeCart(){
   $("#cart").classList.remove("open");
   $("#backdrop").classList.remove("open");
-
 }
 
-$("#searchInput").oninput =
-  renderProducts;
 
-$("#sizeFilter").onchange =
-  renderProducts;
+/* =========================
+   PRETRAGA
+   ========================= */
 
-$("#checkoutBtn").onclick = () => {
+$("#searchInput").oninput=renderProducts;
+$("#sizeFilter").onchange=renderProducts;
 
-  if (!cart.length) {
-    alert("Korpa je prazna.");
-    return;
+
+/* =========================
+   CHECKOUT
+   ========================= */
+
+$("#checkoutBtn").onclick=()=>{
+  if(!cart.length){
+    return alert("Korpa je prazna.");
   }
 
   closeCart();
-
-  openModal(
-    $("#checkoutModal")
-  );
+  openModal($("#checkoutModal"));
 };
 
-$("#checkoutForm").onsubmit = async e => {
 
+$("#checkoutForm").onsubmit=async e=>{
   e.preventDefault();
 
-  const fd =
-    new FormData(e.target);
+  const fd=new FormData(e.target);
 
-  /*
-    VAŽNO:
+  const total=
+    cart.reduce((a,x)=>a+x.price*x.qty,0)+680;
 
-    Svaki proizvod u cart-u već ima:
-    osnovna cena + 680 RSD.
-
-    Zato ovde NE dodajemo 680 ponovo.
-  */
-
-  const total = cart.reduce(
-    (a, x) =>
-      a + Number(x.price) * x.qty,
-    0
-  );
-
-  const payload = {
-
-    customer_name:
-      fd.get("name"),
-
-    phone:
-      fd.get("phone"),
-
-    city:
-      fd.get("city"),
-
-    address:
-      fd.get("address"),
-
-    note:
-      fd.get("note"),
-
-    items:
-      cart,
-
-    total:
-      total
+  const payload={
+    customer_name:fd.get('name'),
+    phone:fd.get('phone'),
+    city:fd.get('city'),
+    address:fd.get('address'),
+    note:fd.get('note'),
+    items:cart,
+    total
   };
 
-  try {
+  const r=await fetch('/api/orders',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify(payload)
+  });
 
-    const r = await fetch(
-      "/api/orders",
-      {
-        method: "POST",
+  const data=await r.json().catch(()=>({}));
 
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
+  $("#checkoutMsg").textContent=
+    r.ok
+      ?'Porudžbina je poslata! Javićemo ti se za potvrdu.'
+      :(data.error||'Došlo je do greške.');
 
-        body:
-          JSON.stringify(payload)
-      }
-    );
-
-    const data =
-      await r.json()
-        .catch(() => ({}));
-
-    $("#checkoutMsg").textContent =
-      r.ok
-        ? "Porudžbina je poslata! Javićemo ti se za potvrdu."
-        : (
-            data.error ||
-            "Došlo je do greške."
-          );
-
-    if (r.ok) {
-
-      cart = [];
-
-      saveCart();
-
-      e.target.reset();
-    }
-
-  } catch {
-
-    $("#checkoutMsg").textContent =
-      "Došlo je do greške.";
+  if(r.ok){
+    cart=[];
+    saveCart();
+    e.target.reset();
   }
 };
 
-async function api(
-  path,
-  options = {}
-) {
 
-  const r =
-    await fetch(
-      path,
-      {
-        headers: {
-          "Content-Type":
-            "application/json",
+/* =========================
+   API
+   ========================= */
 
-          ...(options.headers || {})
-        },
+async function api(path,options={}){
+  const r=await fetch(path,{
+    headers:{
+      'Content-Type':'application/json',
+      ...(options.headers||{})
+    },
+    ...options
+  });
 
-        ...options
-      }
-    );
+  const data=await r.json().catch(()=>({}));
 
-  const data =
-    await r.json()
-      .catch(() => ({}));
-
-  if (!r.ok) {
-    throw new Error(
-      data.error || "Greška"
-    );
+  if(!r.ok){
+    throw new Error(data.error||'Greška');
   }
 
   return data;
 }
 
-function adminLogin() {
 
-  $("#adminMount").innerHTML = `
+/* =========================
+   ADMIN LOGIN
+   ========================= */
 
+function adminLogin(){
+
+  $("#adminMount").innerHTML=`
     <div class="eyebrow">
       STEPLUXE ADMIN
     </div>
@@ -628,63 +482,51 @@ function adminLogin() {
     </form>
   `;
 
-  $("#loginForm").onsubmit =
-    async e => {
 
-      e.preventDefault();
+  $("#loginForm").onsubmit=async e=>{
+    e.preventDefault();
 
-      try {
+    try{
+      await api('/api/login',{
+        method:'POST',
+        body:JSON.stringify({
+          password:new FormData(e.target).get('password')
+        })
+      });
 
-        await api(
-          "/api/login",
-          {
-            method: "POST",
+      adminPanel();
 
-            body:
-              JSON.stringify({
-                password:
-                  new FormData(e.target)
-                    .get("password")
-              })
-          }
-        );
-
-        adminPanel();
-
-      } catch (err) {
-
-        $("#loginMsg")
-          .textContent =
-          err.message;
-      }
-    };
+    }catch(err){
+      $("#loginMsg").textContent=err.message;
+    }
+  };
 }
 
-async function openAdmin() {
 
-  openModal(
-    $("#adminModal")
-  );
+async function openAdmin(){
 
-  try {
+  openModal($("#adminModal"));
 
-    const me =
-      await api("/api/me");
+  try{
+    const me=await api('/api/me');
 
     me.authenticated
-      ? adminPanel()
-      : adminLogin();
+      ?adminPanel()
+      :adminLogin();
 
-  } catch {
-
+  }catch{
     adminLogin();
   }
 }
 
-async function adminPanel() {
 
-  $("#adminMount").innerHTML = `
+/* =========================
+   ADMIN PANEL
+   ========================= */
 
+async function adminPanel(){
+
+  $("#adminMount").innerHTML=`
     <div class="eyebrow">
       STEPLUXE ADMIN
     </div>
@@ -697,7 +539,6 @@ async function adminPanel() {
         align-items:center
       "
     >
-
       <h2>
         Kontrolni panel
       </h2>
@@ -708,11 +549,9 @@ async function adminPanel() {
       >
         Odjava
       </button>
-
     </div>
 
     <div class="tabs">
-
       <button
         class="tab active"
         data-tab="products"
@@ -726,159 +565,131 @@ async function adminPanel() {
       >
         Porudžbine
       </button>
-
     </div>
 
     <div id="adminContent"></div>
   `;
 
-  $("#logout").onclick =
-    async () => {
 
-      await api(
-        "/api/logout",
-        {
-          method: "POST"
-        }
+  $("#logout").onclick=async()=>{
+    await api('/api/logout',{
+      method:'POST'
+    });
+
+    adminLogin();
+  };
+
+
+  $$('.tab').forEach(t=>{
+    t.onclick=()=>{
+      $$('.tab').forEach(x=>
+        x.classList.remove('active')
       );
 
-      adminLogin();
-    };
+      t.classList.add('active');
 
-  $$(".tab").forEach(tab => {
-
-    tab.onclick = () => {
-
-      $$(".tab").forEach(x =>
-        x.classList.remove("active")
-      );
-
-      tab.classList.add("active");
-
-      if (
-        tab.dataset.tab ===
-        "products"
-      ) {
-
-        adminProducts();
-
-      } else {
-
-        adminOrders();
-      }
+      t.dataset.tab==='products'
+        ?adminProducts()
+        :adminOrders();
     };
   });
+
 
   adminProducts();
 }
 
-function compressImage(file) {
 
-  return new Promise(
-    (resolve, reject) => {
+/* =========================
+   SLIKE - KOMPRESIJA
+   ========================= */
 
-      const img =
-        new Image();
+function compressImage(file){
 
-      const reader =
-        new FileReader();
+  return new Promise((resolve,reject)=>{
 
-      reader.onload = () => {
+    const img=new Image();
+    const reader=new FileReader();
 
-        img.onload = () => {
+    reader.onload=()=>{
 
-          const max = 700;
+      img.onload=()=>{
 
-          const scale =
-            Math.min(
-              1,
-              max /
-                Math.max(
-                  img.width,
-                  img.height
-                )
-            );
+        const max=700;
 
-          const c =
-            document.createElement(
-              "canvas"
-            );
+        const scale=Math.min(
+          1,
+          max/Math.max(
+            img.width,
+            img.height
+          )
+        );
 
-          c.width =
-            Math.round(
-              img.width * scale
-            );
+        const c=document.createElement('canvas');
 
-          c.height =
-            Math.round(
-              img.height * scale
-            );
+        c.width=Math.round(img.width*scale);
+        c.height=Math.round(img.height*scale);
 
-          const ctx =
-            c.getContext("2d");
+        const ctx=c.getContext('2d');
 
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            c.width,
-            c.height
-          );
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          c.width,
+          c.height
+        );
 
-          resolve(
-            c.toDataURL(
-              "image/jpeg",
-              0.65
-            )
-          );
-        };
-
-        img.onerror =
-          () =>
-            reject(
-              new Error(
-                "Slika nije mogla da se obradi."
-              )
-            );
-
-        img.src =
-          reader.result;
+        resolve(
+          c.toDataURL(
+            'image/jpeg',
+            0.65
+          )
+        );
       };
 
-      reader.onerror =
-        () =>
-          reject(
-            new Error(
-              "Slika nije mogla da se učita."
-            )
-          );
+      img.onerror=()=>{
+        reject(
+          new Error(
+            'Slika nije mogla da se obradi.'
+          )
+        );
+      };
 
-      reader.readAsDataURL(file);
-    }
-  );
+      img.src=reader.result;
+    };
+
+    reader.onerror=()=>{
+      reject(
+        new Error(
+          'Slika nije mogla da se učita.'
+        )
+      );
+    };
+
+    reader.readAsDataURL(file);
+  });
 }
 
-async function adminProducts() {
 
-  let list = [];
+/* =========================
+   ADMIN PROIZVODI
+   ========================= */
 
-  try {
+async function adminProducts(){
 
-    list =
-      await api(
-        "/api/admin-products"
-      );
+  let list=[];
 
-  } catch (err) {
+  try{
+    list=await api('/api/admin-products');
 
-    $("#adminContent")
-      .textContent =
-      err.message;
+  }catch(err){
 
+    $("#adminContent").textContent=err.message;
     return;
   }
 
-  $("#adminContent").innerHTML = `
+
+  $("#adminContent").innerHTML=`
 
     <div class="admin-grid">
 
@@ -900,7 +711,7 @@ async function adminProducts() {
             name="price"
             type="number"
             min="0"
-            placeholder="Osnovna cena u RSD"
+            placeholder="Cena u RSD"
             required
           >
 
@@ -936,6 +747,7 @@ async function adminProducts() {
 
       </div>
 
+
       <div>
 
         <h3>
@@ -944,71 +756,53 @@ async function adminProducts() {
 
         <div class="admin-list">
 
-          ${
-            list.map(p => `
+          ${list.map(p=>`
 
-              <div class="admin-item">
+            <div class="admin-item">
 
-                <img
-                  src="${p.image || "logo.png"}"
-                  alt=""
-                >
+              <img
+                src="${p.image||'logo.png'}"
+              >
 
-                <div
-                  class="admin-item-main"
-                >
+              <div class="admin-item-main">
 
-                  <b>
-                    ${esc(p.name)}
-                  </b>
+                <b>
+                  ${esc(p.name)}
+                </b>
 
-                  <div class="muted">
-
-                    ${money(finalPrice(p.price))}
-                    ·
-                    ${(p.sizes || []).join(", ")}
-
-                  </div>
-
-                </div>
-
-                <div
-                  class="admin-actions"
-                >
-
-                  <button
-                    class="btn ghost"
-                    onclick="
-                      toggleProduct(
-                        '${esc(p.id)}',
-                        ${!p.active}
-                      )
-                    "
-                  >
-                    ${
-                      p.active
-                        ? "Sakrij"
-                        : "Prikaži"
-                    }
-                  </button>
-
-                  <button
-                    class="btn danger"
-                    onclick="
-                      deleteProduct(
-                        '${esc(p.id)}'
-                      )
-                    "
-                  >
-                    Obriši
-                  </button>
-
+                <div class="muted">
+                  ${money(p.price)}
+                  ·
+                  ${(p.sizes||[]).join(', ')}
                 </div>
 
               </div>
 
-            `).join("")
-          }
+
+              <div class="admin-actions">
+
+                <button
+                  class="btn ghost"
+                  onclick="toggleProduct(
+                    '${p.id}',
+                    ${!p.active}
+                  )"
+                >
+                  ${p.active?'Sakrij':'Prikaži'}
+                </button>
+
+                <button
+                  class="btn danger"
+                  onclick="deleteProduct('${p.id}')"
+                >
+                  Obriši
+                </button>
+
+              </div>
+
+            </div>
+
+          `).join('')}
 
         </div>
 
@@ -1017,78 +811,62 @@ async function adminProducts() {
     </div>
   `;
 
-  $("#productForm").onsubmit =
-    addProduct;
+
+  $("#productForm").onsubmit=addProduct;
 }
 
-async function addProduct(e) {
+
+/* =========================
+   DODAJ PROIZVOD
+   ========================= */
+
+async function addProduct(e){
 
   e.preventDefault();
 
-  const fd =
-    new FormData(e.target);
+  const fd=new FormData(e.target);
+  const msg=$("#productMsg");
 
-  const msg =
-    $("#productMsg");
+  msg.textContent='Dodavanje…';
 
-  msg.textContent =
-    "Dodavanje…";
 
-  try {
+  try{
 
-    const files =
-      [...fd.getAll("images")];
+    const files=[
+      ...fd.getAll('images')
+    ];
 
-    const images =
-      await Promise.all(
-        files.map(
-          file =>
-            compressImage(file)
-        )
-      );
-
-    await api(
-      "/api/products",
-      {
-        method: "POST",
-
-        body:
-          JSON.stringify({
-
-            name:
-              fd.get("name"),
-
-            /*
-              OVDE SE ČUVA OSNOVNA CENA.
-              +680 se računa samo na sajtu.
-            */
-            price:
-              Number(
-                fd.get("price")
-              ),
-
-            sizes:
-              fd.get("sizes")
-                .split(",")
-                .map(
-                  x => x.trim()
-                )
-                .filter(Boolean),
-
-            description:
-              fd.get("description"),
-
-            images:
-              images,
-
-            image:
-              images[0] || ""
-          })
-      }
+    const images=await Promise.all(
+      files.map(file=>compressImage(file))
     );
 
-    msg.textContent =
-      "Proizvod dodat!";
+
+    await api('/api/products',{
+      method:'POST',
+
+      body:JSON.stringify({
+
+        name:fd.get('name'),
+
+        price:Number(
+          fd.get('price')
+        ),
+
+        sizes:fd.get('sizes')
+          .split(',')
+          .map(x=>x.trim())
+          .filter(Boolean),
+
+        description:fd.get('description'),
+
+        images:images,
+
+        image:images[0]||''
+      })
+    });
+
+
+    msg.textContent='Proizvod dodat!';
 
     e.target.reset();
 
@@ -1096,105 +874,109 @@ async function addProduct(e) {
 
     adminProducts();
 
-  } catch (err) {
+  }catch(err){
 
-    msg.textContent =
-      err.message;
+    msg.textContent=err.message;
   }
 }
 
-window.toggleProduct =
-  async (id, active) => {
 
-    try {
+/* =========================
+   SAKRIJ / PRIKAŽI
+   ========================= */
 
-      await api(
-        "/api/products",
-        {
-          method: "PUT",
+window.toggleProduct=async(
+  id,
+  active
+)=>{
 
-          body:
-            JSON.stringify({
-              id,
-              active
-            })
-        }
-      );
+  try{
 
-      await loadProducts();
+    await api('/api/products',{
+      method:'PUT',
 
-      adminProducts();
+      body:JSON.stringify({
+        id,
+        active
+      })
+    });
 
-    } catch (e) {
+    await loadProducts();
 
-      alert(e.message);
-    }
-  };
+    adminProducts();
 
-window.deleteProduct =
-  async id => {
+  }catch(e){
 
-    if (
-      !confirm(
-        "Obrisati proizvod?"
-      )
-    ) {
-      return;
-    }
+    alert(e.message);
+  }
+};
 
-    try {
 
-      await api(
-        "/api/products?id=" +
-        encodeURIComponent(id),
-        {
-          method: "DELETE"
-        }
-      );
+/* =========================
+   OBRIŠI PROIZVOD
+   ========================= */
 
-      await loadProducts();
+window.deleteProduct=async id=>{
 
-      adminProducts();
-
-    } catch (e) {
-
-      alert(e.message);
-    }
-  };
-
-async function adminOrders() {
-
-  let data = [];
-
-  try {
-
-    data =
-      await api("/api/orders");
-
-  } catch (err) {
-
-    $("#adminContent")
-      .textContent =
-      err.message;
-
+  if(!confirm('Obrisati proizvod?')){
     return;
   }
 
-  $("#adminContent").innerHTML = `
+  try{
+
+    await api(
+      '/api/products?id='+
+      encodeURIComponent(id),
+      {
+        method:'DELETE'
+      }
+    );
+
+    await loadProducts();
+
+    adminProducts();
+
+  }catch(e){
+
+    alert(e.message);
+  }
+};
+
+
+/* =========================
+   ADMIN PORUDŽBINE
+   ========================= */
+
+async function adminOrders(){
+
+  let data=[];
+
+  try{
+
+    data=await api('/api/orders');
+
+  }catch(err){
+
+    $("#adminContent").textContent=err.message;
+    return;
+  }
+
+
+  $("#adminContent").innerHTML=`
 
     <h3>
       Porudžbine (${data.length})
     </h3>
 
     ${
-      data.map(o => `
+      data.map(o=>`
 
         <div class="order">
 
           <div class="order-head">
 
             <b>
-              #${o.id.slice(0, 8)}
+              #${o.id.slice(0,8)}
             </b>
 
             <span class="status">
@@ -1202,6 +984,7 @@ async function adminOrders() {
             </span>
 
           </div>
+
 
           <p>
 
@@ -1219,20 +1002,22 @@ async function adminOrders() {
 
           </p>
 
+
           <div class="muted">
 
-            ${
-              (o.items || [])
-                .map(
-                  x =>
-                    `${esc(x.name)}
-                    — ${esc(x.size)}
-                    × ${x.qty}`
-                )
-                .join("<br>")
+            ${(o.items||[])
+              .map(x=>
+                `${esc(x.name)}
+                —
+                ${esc(x.size)}
+                ×
+                ${x.qty}`
+              )
+              .join('<br>')
             }
 
           </div>
+
 
           <div
             style="
@@ -1247,61 +1032,42 @@ async function adminOrders() {
               ${money(o.total)}
             </b>
 
+
             <select
               onchange="
                 setOrderStatus(
-                  '${esc(o.id)}',
+                  '${o.id}',
                   this.value
                 )
               "
             >
 
               <option
-                ${
-                  o.status === "new"
-                    ? "selected"
-                    : ""
-                }
+                ${o.status==='new'?'selected':''}
               >
                 new
               </option>
 
               <option
-                ${
-                  o.status === "confirmed"
-                    ? "selected"
-                    : ""
-                }
+                ${o.status==='confirmed'?'selected':''}
               >
                 confirmed
               </option>
 
               <option
-                ${
-                  o.status === "sent"
-                    ? "selected"
-                    : ""
-                }
+                ${o.status==='sent'?'selected':''}
               >
                 sent
               </option>
 
               <option
-                ${
-                  o.status === "completed"
-                    ? "selected"
-                    : ""
-                }
+                ${o.status==='completed'?'selected':''}
               >
                 completed
               </option>
 
               <option
-                ${
-                  o.status === "cancelled"
-                    ? "selected"
-                    : ""
-                }
+                ${o.status==='cancelled'?'selected':''}
               >
                 cancelled
               </option>
@@ -1312,56 +1078,65 @@ async function adminOrders() {
 
         </div>
 
-      `).join("")
+      `).join('')
       ||
       '<p class="muted">Nema porudžbina.</p>'
     }
+
   `;
 }
 
-window.setOrderStatus =
-  async (id, status) => {
 
-    try {
+/* =========================
+   STATUS PORUDŽBINE
+   ========================= */
 
-      await api(
-        "/api/orders",
-        {
-          method: "PUT",
+window.setOrderStatus=async(
+  id,
+  status
+)=>{
 
-          body:
-            JSON.stringify({
-              id,
-              status
-            })
-        }
-      );
+  try{
 
-      adminOrders();
+    await api('/api/orders',{
+      method:'PUT',
 
-    } catch (e) {
+      body:JSON.stringify({
+        id,
+        status
+      })
+    });
 
-      alert(e.message);
-    }
-  };
+    adminOrders();
+
+  }catch(e){
+
+    alert(e.message);
+  }
+};
+
+
+/* =========================
+   ADMIN HASH
+   ========================= */
 
 window.addEventListener(
-  "hashchange",
-  () => {
-
-    if (
-      location.hash === "#admin"
-    ) {
+  'hashchange',
+  ()=>{
+    if(location.hash==='#admin'){
       openAdmin();
     }
   }
 );
 
+
+/* =========================
+   START
+   ========================= */
+
 loadProducts();
 renderCart();
 
-if (
-  location.hash === "#admin"
-) {
+if(location.hash==='#admin'){
   openAdmin();
 }
